@@ -2,13 +2,16 @@ from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm, csrf, CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
-from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField, RadioField
+from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import Input
+
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flask.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///flask.sqlite3"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'mandale'
+app.config['SECRET_KEY'] = 'mandale'                                                                                       
 
 db = SQLAlchemy(app)
 
@@ -19,14 +22,44 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField("Запомнить меня")
     submit = SubmitField("Войти")
     
+  # Импорт с большой буквы!
 
 class JobForm(FlaskForm):
-    Job_Title = StringField("Название работы", validators=[validators.DataRequired()])
-    Team_lead_id = StringField("ID капитана", validators=[validators.DataRequired()])
-    Work_Size = IntegerField("Размер работы", validators=[validators.DataRequired()])
-    Collaborators = StringField("Коллеги", validators=[validators.DataRequired()])
-    finish = BooleanField("Окончено", validators=[validators.DataRequired()])
-    sub = SubmitField("Submit")
+    Job_Title = StringField(
+        "Название работы",
+        validators=[validators.DataRequired()],
+        render_kw={"class": "form-control"},  # Более простой способ
+        widget=Input()  # Если нужен кастомный виджет
+    )
+    
+    Team_lead_id = StringField(
+        "ID капитана",
+        validators=[validators.DataRequired()],
+        render_kw={"class": "form-control"}
+    )
+    
+    Work_Size = IntegerField(
+        "Размер работы",
+        validators=[validators.DataRequired()],
+        render_kw={"class": "form-control"}
+    )
+    
+    Collaborators = StringField(
+        "Коллеги",
+        validators=[validators.DataRequired()],
+        render_kw={"class": "form-control"}
+    )
+    
+    finish = BooleanField(
+        "Окончено",
+        validators=[validators.DataRequired()],
+        render_kw={"class": "form-check-input"}  # Специальный класс для чекбоксов
+    )
+    
+    sub = SubmitField(
+        "Submit",
+        render_kw={"class": "btn btn-primary"}  # Классы для кнопки
+    )
 
     
 class User(UserMixin, db.Model):
@@ -45,7 +78,12 @@ class User(UserMixin, db.Model):
 class Jobs(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
-    work_name = db.Column(db.String(80), nullable=False)
+    Job_Title = db.Column(db.String(80), nullable=False)
+    Team_lead_id = db.Column(db.Integer, nullable=False)
+    Work_Size = db.Column(db.Integer, nullable=False)
+    Collaborators = db.Column(db.String(80), nullable=False)
+    finish = db.Column(db.Boolean, nullable=False)
+    
 
 
 @app.route("/")
@@ -71,9 +109,9 @@ def login():
 def addjob():
     forma = JobForm()
     if request.method == "POST":
-        job = Jobs(work_name=forma.work_name.data)
-        db.session.add(job)
-        db.session.commit()
+        job = Jobs(Job_Title=forma.Job_Title.data, Team_lead_id=forma.Team_lead_id.data, 
+                   Work_Size=forma.Work_Size.data, Collaborators=forma.Collaborators.data, 
+                   finish=forma.finish.data)
         return redirect("/")
     return render_template("job.html", title='Добавить работу', form=forma)
 
