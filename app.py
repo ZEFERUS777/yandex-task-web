@@ -1,11 +1,10 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm, csrf, CSRFProtect
+from flask_wtf import FlaskForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms.widgets import Input
-
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///flask.sqlite3"
@@ -13,6 +12,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mandale'
 
 db = SQLAlchemy(app)
+log_m = LoginManager()
+log_m.init_app(app)
+log_m.login_view = 'login'
+
+
 
 
 class LoginForm(FlaskForm):
@@ -22,17 +26,15 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField("Запомнить меня")
     submit = SubmitField("Войти")
 
-  # Импорт с большой буквы!
-
 
 class JobForm(FlaskForm):
     Job_Title = StringField(
         "Название работы",
         validators=[validators.DataRequired()],
-        render_kw={"class": "form-control"},  # Более простой способ
+        render_kw={"class": "form-control"},
     )
 
-    Team_lead_id = StringField(
+    Team_lead_id = IntegerField(
         "ID капитана",
         validators=[validators.DataRequired()],
         render_kw={"class": "form-control"}
@@ -52,8 +54,7 @@ class JobForm(FlaskForm):
 
     finish = BooleanField(
         "Окончено",
-        validators=[validators.DataRequired()],
-        # Специальный класс для чекбоксов
+        # Удален validators.DataRequired()
         render_kw={"class": "form-check-input"}
     )
 
@@ -63,12 +64,19 @@ class JobForm(FlaskForm):
     )
 
 
+class RegisterForm(FlaskForm):
+    email = EmailField('Email', validators=[validators.DataRequired()])
+    password = PasswordField('Password', validators=[validators.DataRequired()])
+    submit = SubmitField('Register')
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     password_bash = db.Column(db.String(120))
-
+    
+    
     def set_password(self, password):
         self.password_bash = generate_password_hash(password)
 
@@ -92,32 +100,68 @@ def index():
     return render_template("base.html")
 
 
+# Добавьте этот код после создания экземпляра LoginManager и определения класса User
+
+@log_m.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if request.method == "POST":
-        if form.validate_on_submit():
-            user = User.query.filter_by(email=form.email.data).first()
-            if user and user.check_password(form.password.data):
-                login_user(user, remember=form.remember_me.data)
-                return redirect("index")
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect(url_for('index'))
     return render_template("login.html", title='Авторизация', form=form)
 
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))  # Используйте url_for
+
+
 @app.route("/addjob", methods=['GET', 'POST'])
+@login_required
 def addjob():
     forma = JobForm()
-    if request.method == "POST":
+    if forma.validate_on_submit():  # Используйте validate_on_submit для формы
         try:
-            job = Jobs(Job_Title=forma.Job_Title.data, Team_lead_id=forma.Team_lead_id.data,
-                       Work_Size=forma.Work_Size.data, Collaborators=forma.Collaborators.data,
-                       finish=forma.finish.data)
+            job = Jobs(
+                Job_Title=forma.Job_Title.data,
+                Team_lead_id=forma.Team_lead_id.data,
+                Work_Size=forma.Work_Size.data,
+                Collaborators=forma.Collaborators.data,
+                finish=forma.finish.data
+            )
             db.session.add(job)
             db.session.commit()
-            return redirect("index")
+            return redirect(url_for('index'))  # Используйте url_for
         except Exception as e:
-            return render_template("job.html", error=True, form=forma)
+            return redirect(url_for('addjob'))
     return render_template("job.html", title='Добавить работу', form=forma)
+
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if request.method == 'POST':
+        try:
+            user = User.query.filter_by(email=form.email.data).first()
+            if user:
+                return render_template("register.html", form=form, error="Пользователь уже существует")
+            new_user = User(email=form.email.data)
+            new_user.set_password(form.password.data)
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for("login"))
+        except Exception as e:
+            return render_template("register.html", form=form, error=True)
+    return render_template("register.html", form=form)
 
 
 with app.app_context():

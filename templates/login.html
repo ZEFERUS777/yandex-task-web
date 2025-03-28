@@ -1,7 +1,7 @@
 {%  extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<form method="POST" class="bg-light p-4 rounded shadow" style="margin-left: auto; margin-right: auto; max-width:500px; margin-top:25px;"">
+<form method="POST" class="bg-light p-4 rounded shadow" style="margin-left: auto; margin-right: auto; max-width:500px; margin-top:25px;">
     <h3>{{ title }}</h3>
     {{ form.email.label }}<br>
     {{ form.email(class="form-control", placeholder="Enter your email:", value="example@example.com") }}

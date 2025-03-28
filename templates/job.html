@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h4 class="mb-4">Добавить работу</h4>
+    
+    <form method="post" class="bg-light p-4 rounded shadow">
+        {{ form.hidden_tag() }}
+        
+        <!-- Поле Job Title -->
+        <div class="mb-3">
+            {{ form.Job_Title.label }}
+            {{ form.Job_Title }}
+        </div>
+
+        <!-- Поле Team Leader -->
+        <div class="mb-3">
+            {{ form.Team_lead_id.label }}
+            {{ form.Team_lead_id }}
+        </div>
+
+        <!-- Поле Work Size -->
+        <div class="mb-3">
+            {{ form.Work_Size.label }}
+            {{ form.Work_Size }}
+        </div>
+
+        <!-- Поле Collaborators -->
+        <div class="mb-3">
+            {{ form.Collaborators.label }}
+            {{ form.Collaborators }}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form.finish.label }}
+            {{ form.finish }}
+        </div>
+
+        <!-- Кнопка отправки -->
+        <div class="d-grid gap-2">
+            {{ form.sub }}
+        </div>
+    </form>
+    <br><br>
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        <p>Ошибка: при работе с базой данных</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
