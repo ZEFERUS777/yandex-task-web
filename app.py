@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_wtf.csrf import CSRFProtect
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///flask.sqlite3"
@@ -15,8 +15,6 @@ db = SQLAlchemy(app)
 log_m = LoginManager()
 log_m.init_app(app)
 log_m.login_view = 'login'
-
-
 
 
 class LoginForm(FlaskForm):
@@ -54,19 +52,19 @@ class JobForm(FlaskForm):
 
     finish = BooleanField(
         "Окончено",
-        # Удален validators.DataRequired()
         render_kw={"class": "form-check-input"}
     )
 
     sub = SubmitField(
-        "Submit",
-        render_kw={"class": "btn btn-primary"}  # Классы для кнопки
+        "Отправить",
+        render_kw={"class": "btn btn-primary"}  
     )
 
 
 class RegisterForm(FlaskForm):
     email = EmailField('Email', validators=[validators.DataRequired()])
-    password = PasswordField('Password', validators=[validators.DataRequired()])
+    password = PasswordField('Password', validators=[
+                             validators.DataRequired()])
     submit = SubmitField('Register')
 
 
@@ -75,8 +73,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     password_bash = db.Column(db.String(120))
-    
-    
+
     def set_password(self, password):
         self.password_bash = generate_password_hash(password)
 
@@ -110,7 +107,7 @@ def load_user(user_id):
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
+    if request.method == "POST":
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
