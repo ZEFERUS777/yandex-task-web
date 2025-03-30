@@ -1,10 +1,8 @@
 from flask import Flask, request, redirect, render_template, url_for
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy_serializer import SerializerMixin
 from blueprint.rest_api import jobs_bp
 from data.models import User, Jobs, db
 
