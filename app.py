@@ -7,14 +7,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///flask.sqlite3"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'mandale'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flask.sqlite3"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = "mandale"
 
 db = SQLAlchemy(app)
 log_m = LoginManager()
 log_m.init_app(app)
-log_m.login_view = 'login'
+log_m.login_view = "login"
 
 
 class LoginForm(FlaskForm):
@@ -97,8 +97,6 @@ def index():
     return render_template("base.html")
 
 
-# Добавьте этот код после создания экземпляра LoginManager и определения класса User
-
 @log_m.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -119,14 +117,14 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))  # Используйте url_for
+    return redirect(url_for('index'))  
 
 
 @app.route("/addjob", methods=['GET', 'POST'])
 @login_required
 def addjob():
     forma = JobForm()
-    if forma.validate_on_submit():  # Используйте validate_on_submit для формы
+    if forma.validate_on_submit(): 
         try:
             job = Jobs(
                 Job_Title=forma.Job_Title.data,
@@ -137,7 +135,7 @@ def addjob():
             )
             db.session.add(job)
             db.session.commit()
-            return redirect(url_for('index'))  # Используйте url_for
+            return redirect(url_for('index'))  
         except Exception as e:
             return redirect(url_for('addjob'))
     return render_template("job.html", title='Добавить работу', form=forma)
@@ -157,12 +155,13 @@ def register():
             db.session.commit()
             return redirect(url_for("login"))
         except Exception as e:
-            return render_template("register.html", form=form, error=True)
+            return render_template("register.html", form=form, error="Ошибка регистрации, попробуйте снова")
     return render_template("register.html", form=form)
 
 
 with app.app_context():
     db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
