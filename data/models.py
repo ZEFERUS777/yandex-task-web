@@ -1,0 +1,29 @@
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+db = SQLAlchemy()
+
+
+class User(UserMixin, db.Model, SerializerMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(80), unique=True)
+    password_bash = db.Column(db.String(120))
+
+    def set_password(self, password):
+        self.password_bash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_bash, password)
+
+
+class Jobs(db.Model, SerializerMixin):
+    __tablename__ = 'jobs'
+    id = db.Column(db.Integer, primary_key=True)
+    Job_Title = db.Column(db.String(80), nullable=False)
+    Team_lead_id = db.Column(db.Integer, nullable=False)
+    Work_Size = db.Column(db.Integer, nullable=False)
+    Collaborators = db.Column(db.String(80), nullable=False)
+    finish = db.Column(db.Boolean, nullable=False)
