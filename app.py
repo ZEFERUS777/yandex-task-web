@@ -4,6 +4,9 @@ from flask_wtf import FlaskForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy_serializer import SerializerMixin
+from blueprint.rest_api import jobs_bp
+from data.models import User, Jobs, db
 
 
 app = Flask(__name__)
@@ -11,10 +14,13 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flask.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "mandale"
 
-db = SQLAlchemy(app)
 log_m = LoginManager()
 log_m.init_app(app)
 log_m.login_view = "login"
+
+app.register_blueprint(jobs_bp)
+
+db.init_app(app)
 
 
 class LoginForm(FlaskForm):
@@ -68,27 +74,7 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Register')
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(80), unique=True)
-    password_bash = db.Column(db.String(120))
 
-    def set_password(self, password):
-        self.password_bash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_bash, password)
-
-
-class Jobs(db.Model):
-    __tablename__ = 'jobs'
-    id = db.Column(db.Integer, primary_key=True)
-    Job_Title = db.Column(db.String(80), nullable=False)
-    Team_lead_id = db.Column(db.Integer, nullable=False)
-    Work_Size = db.Column(db.Integer, nullable=False)
-    Collaborators = db.Column(db.String(80), nullable=False)
-    finish = db.Column(db.Boolean, nullable=False)
 
 
 @app.route("/")
