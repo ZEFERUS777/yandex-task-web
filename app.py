@@ -4,7 +4,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
 from werkzeug.security import generate_password_hash, check_password_hash
 from blueprint.rest_api import jobs_bp
-from data.models import User, Jobs, db
+from data.models import User, Jobs, db, Api_Keys
+from secrets import token_urlsafe
 
 
 app = Flask(__name__)
@@ -61,7 +62,7 @@ class JobForm(FlaskForm):
 
     sub = SubmitField(
         "Отправить",
-        render_kw={"class": "btn btn-primary"}  
+        render_kw={"class": "btn btn-primary"}
     )
 
 
@@ -72,7 +73,10 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Register')
 
 
-
+class Reg_Api_key(FlaskForm):
+    email = EmailField("Введите свою почту", validators=[
+                       validators.DataRequired()])
+    sub_btn = SubmitField("Подтвердить")
 
 
 @app.route("/")
@@ -101,14 +105,14 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))  
+    return redirect(url_for('index'))
 
 
 @app.route("/addjob", methods=['GET', 'POST'])
 @login_required
 def addjob():
     forma = JobForm()
-    if forma.validate_on_submit(): 
+    if forma.validate_on_submit():
         try:
             job = Jobs(
                 Job_Title=forma.Job_Title.data,
@@ -119,7 +123,7 @@ def addjob():
             )
             db.session.add(job)
             db.session.commit()
-            return redirect(url_for('index'))  
+            return redirect(url_for('index'))
         except Exception as e:
             return redirect(url_for('addjob'))
     return render_template("job.html", title='Добавить работу', form=forma)
@@ -128,11 +132,12 @@ def addjob():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    user = User.query.filter_by(email=form.email.data).first()
+    if user:
+        return render_template("register.html", form=form, error="Пользователь уже существует")
     if request.method == 'POST':
         try:
-            user = User.query.filter_by(email=form.email.data).first()
-            if user:
-                return render_template("register.html", form=form, error="Пользователь уже существует")
+
             new_user = User(email=form.email.data)
             new_user.set_password(form.password.data)
             db.session.add(new_user)
@@ -141,6 +146,27 @@ def register():
         except Exception as e:
             return render_template("register.html", form=form, error="Ошибка регистрации, попробуйте снова")
     return render_template("register.html", form=form)
+
+
+@app.route("/create_api_key", methods=["GET", "POST"])
+def create_api_key():
+    form = Reg_Api_key()
+    if request.method == "POST":
+        try:
+            key = token_urlsafe(16)
+            email = form.email.data
+            aap = Api_Keys.query.filter_by(email_address=email).first()
+            if aap:
+                return render_template("reg_api.html", form=form, error="Вы уже создавали ключ")
+            key_f = Api_Keys(email_address=email,
+                            key=generate_password_hash(key))
+            db.session.add(key_f)
+            db.session.commit()
+            return render_template("vision_api.html", api_key=key)
+        except Exception:
+            return render_template("reg_api.html", form=form, 
+                                   error="Ошибка при работе с базой данных")
+    return render_template("reg_api.html", form=form)
 
 
 with app.app_context():

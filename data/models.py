@@ -27,3 +27,10 @@ class Jobs(db.Model, SerializerMixin):
     Work_Size = db.Column(db.Integer, nullable=False)
     Collaborators = db.Column(db.String(80), nullable=False)
     finish = db.Column(db.Boolean, nullable=False)
+
+
+class Api_Keys(db.Model):
+    __tablename__ = "api_keys"
+    id = db.Column(db.Integer, primary_key=True)
+    email_address = db.Column(db.String(80), nullable=False)
+    key = db.Column(db.String(80), nullable=False)
