@@ -34,3 +34,9 @@ class Api_Keys(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email_address = db.Column(db.String(80), nullable=False)
     key = db.Column(db.String(80), nullable=False)
+    
+    def set_password(self, password):
+        self.key = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.key, password)

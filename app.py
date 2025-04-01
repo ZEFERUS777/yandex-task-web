@@ -158,8 +158,8 @@ def create_api_key():
             aap = Api_Keys.query.filter_by(email_address=email).first()
             if aap:
                 return render_template("reg_api.html", form=form, error="Вы уже создавали ключ")
-            key_f = Api_Keys(email_address=email,
-                            key=generate_password_hash(key))
+            key_f = Api_Keys(email_address=email)
+            key_f.set_password(key)
             db.session.add(key_f)
             db.session.commit()
             return render_template("vision_api.html", api_key=key)
