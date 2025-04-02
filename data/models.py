@@ -28,15 +28,22 @@ class Jobs(db.Model, SerializerMixin):
     Collaborators = db.Column(db.String(80), nullable=False)
     finish = db.Column(db.Boolean, nullable=False)
 
+    def __init__(self, job_title: str, team_lead_id: int, work_size: int, collaborators: str, finish: bool = False):
+        self.Job_Title = job_title
+        self.Team_lead_id = team_lead_id
+        self.Work_Size = work_size
+        self.Collaborators = collaborators
+        self.finish = finish
+
 
 class Api_Keys(db.Model):
     __tablename__ = "api_keys"
     id = db.Column(db.Integer, primary_key=True)
     email_address = db.Column(db.String(80), nullable=False)
     key = db.Column(db.String(80), nullable=False)
-    
+
     def set_password(self, password):
         self.key = generate_password_hash(password)
-    
+
     def check_password(self, password):
         return check_password_hash(self.key, password)
