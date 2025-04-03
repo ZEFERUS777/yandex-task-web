@@ -48,3 +48,22 @@ def add_job():
     db.session.commit()
     return jsonify({"message": "Job added successfully"}), 200
     
+
+@jobs_bp.route("/delete", methods=["DELETE"])
+def delete_job():
+    api_l = request.args.get("apikey")
+    job_id = int(request.args.get("job_id"))
+    email = request.args.get("email")
+    try:
+        rer = Api_Keys.query.filter_by(email_address=email).first()
+        if not rer.check_password(api_l):
+            return jsonify({"error": "Invalid API key"}), 403
+        job = Jobs.query.get(job_id)
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+        db.session.delete(job)
+        db.session.commit()
+        return jsonify({"message": "Job deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": "Error deleting job"}), 500
+    
