@@ -2,7 +2,6 @@ from flask import Flask, request, redirect, render_template, url_for
 from flask_wtf import FlaskForm
 from flask_login import LoginManager, login_user, logout_user, login_required
 from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
-from werkzeug.security import generate_password_hash, check_password_hash
 from blueprint.rest_api import jobs_bp
 from data.models import User, Jobs, db, Api_Keys
 from secrets import token_urlsafe
@@ -18,7 +17,6 @@ log_m.init_app(app)
 log_m.login_view = "login"
 
 app.register_blueprint(jobs_bp)
-
 db.init_app(app)
 
 
@@ -115,16 +113,17 @@ def addjob():
     if forma.validate_on_submit():
         try:
             job = Jobs(
-                Job_Title=forma.Job_Title.data,
-                Team_lead_id=forma.Team_lead_id.data,
-                Work_Size=forma.Work_Size.data,
-                Collaborators=forma.Collaborators.data,
+                job_title=forma.Job_Title.data,
+                team_lead_id=forma.Team_lead_id.data,
+                work_size=forma.Work_Size.data,
+                collaborators=forma.Collaborators.data,
                 finish=forma.finish.data
             )
             db.session.add(job)
             db.session.commit()
             return redirect(url_for('index'))
         except Exception as e:
+            print(e)
             return redirect(url_for('addjob'))
     return render_template("job.html", title='Добавить работу', form=forma)
 
@@ -164,9 +163,19 @@ def create_api_key():
             db.session.commit()
             return render_template("vision_api.html", api_key=key)
         except Exception:
-            return render_template("reg_api.html", form=form, 
+            return render_template("reg_api.html", form=form,
                                    error="Ошибка при работе с базой данных")
     return render_template("reg_api.html", form=form)
+
+
+@app.route("/jobs_vision")
+def jobs_vision():
+    jobs = Jobs.query.all()
+    return render_template("jobs_list.html", jobs=jobs)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 with app.app_context():
