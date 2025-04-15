@@ -5,6 +5,7 @@ from wtforms import StringField, SubmitField, PasswordField, EmailField, Boolean
 from blueprint.rest_api import jobs_bp
 from data.models import User, Jobs, db, Api_Keys
 from secrets import token_urlsafe
+from data.wtf_forms import LoginForm, RegisterForm, JobForm, Reg_Api_key
 
 
 app = Flask(__name__)
@@ -18,63 +19,6 @@ log_m.login_view = "login"
 
 app.register_blueprint(jobs_bp)
 db.init_app(app)
-
-
-class LoginForm(FlaskForm):
-    email = EmailField('Почта', validators=[validators.DataRequired()])
-    password = PasswordField('Пароль', validators=[
-                             validators.DataRequired(), validators.length(min=8, max=15)])
-    remember_me = BooleanField("Запомнить меня")
-    submit = SubmitField("Войти")
-
-
-class JobForm(FlaskForm):
-    Job_Title = StringField(
-        "Название работы",
-        validators=[validators.DataRequired()],
-        render_kw={"class": "form-control"},
-    )
-
-    Team_lead_id = IntegerField(
-        "ID капитана",
-        validators=[validators.DataRequired()],
-        render_kw={"class": "form-control"}
-    )
-
-    Work_Size = IntegerField(
-        "Размер работы",
-        validators=[validators.DataRequired()],
-        render_kw={"class": "form-control"}
-    )
-
-    Collaborators = StringField(
-        "Коллеги",
-        validators=[validators.DataRequired()],
-        render_kw={"class": "form-control"}
-    )
-
-    finish = BooleanField(
-        "Окончено",
-        render_kw={"class": "form-check-input"}
-    )
-
-    sub = SubmitField(
-        "Отправить",
-        render_kw={"class": "btn btn-primary"}
-    )
-
-
-class RegisterForm(FlaskForm):
-    email = EmailField('Email', validators=[validators.DataRequired()])
-    password = PasswordField('Password', validators=[
-                             validators.DataRequired()])
-    submit = SubmitField('Register')
-
-
-class Reg_Api_key(FlaskForm):
-    email = EmailField("Введите свою почту", validators=[
-                       validators.DataRequired()])
-    sub_btn = SubmitField("Подтвердить")
 
 
 @app.route("/")
@@ -136,7 +80,6 @@ def register():
         return render_template("register.html", form=form, error="Пользователь уже существует")
     if request.method == 'POST':
         try:
-
             new_user = User(email=form.email.data)
             new_user.set_password(form.password.data)
             db.session.add(new_user)
@@ -148,6 +91,7 @@ def register():
 
 
 @app.route("/create_api_key", methods=["GET", "POST"])
+@login_required
 def create_api_key():
     form = Reg_Api_key()
     if request.method == "POST":
@@ -169,6 +113,7 @@ def create_api_key():
 
 
 @app.route("/jobs_vision")
+@login_required
 def jobs_vision():
     jobs = Jobs.query.all()
     return render_template("jobs_list.html", jobs=jobs)
