@@ -11,6 +11,7 @@ class User(UserMixin, db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     password_bash = db.Column(db.String(120))
+    api_k = db.Column(db.String(18))
 
     def set_password(self, password):
         self.password_bash = generate_password_hash(password)
@@ -47,3 +48,4 @@ class Api_Keys(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.key, password)
+    

@@ -102,6 +102,10 @@ def create_api_key():
             key_f.set_password(key)
             db.session.add(key_f)
             db.session.commit()
+            user = User.query.filter_by(email=email).first()
+            user.api_k = key
+            db.session.add(user)
+            db.session.commit()
             return render_template("vision_api.html", api_key=key)
         except Exception:
             return render_template("reg_api.html", form=form,
@@ -114,6 +118,14 @@ def create_api_key():
 def jobs_vision():
     jobs = Jobs.query.all()
     return render_template("jobs_list.html", jobs=jobs)
+
+
+@app.route("/profile")
+@login_required
+def profile():
+    if current_user.api_k is None:
+        return render_template("profile.html", user_name=current_user.email, api_key="Не зарегистрирован")
+    return render_template("profile.html", user_name=current_user.email, api_key=current_user.api_k)
 
 
 if __name__ == '__main__':
