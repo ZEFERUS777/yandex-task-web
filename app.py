@@ -1,12 +1,9 @@
 from flask import Flask, request, redirect, render_template, url_for
-from flask_wtf import FlaskForm
-from flask_login import LoginManager, login_user, logout_user, login_required
-from wtforms import StringField, SubmitField, PasswordField, EmailField, BooleanField, validators, IntegerField
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from blueprint.rest_api import jobs_bp
 from data.models import User, Jobs, db, Api_Keys
 from secrets import token_urlsafe
 from data.wtf_forms import LoginForm, RegisterForm, JobForm, Reg_Api_key
-
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flask.sqlite3"
@@ -97,7 +94,7 @@ def create_api_key():
     if request.method == "POST":
         try:
             key = token_urlsafe(16)
-            email = form.email.data
+            email = current_user.email
             aap = Api_Keys.query.filter_by(email_address=email).first()
             if aap:
                 return render_template("reg_api.html", form=form, error="Вы уже создавали ключ")

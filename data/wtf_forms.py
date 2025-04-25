@@ -55,6 +55,4 @@ class RegisterForm(FlaskForm):
 
 
 class Reg_Api_key(FlaskForm):
-    email = EmailField("Введите свою почту", validators=[
-                       validators.DataRequired()])
     sub_btn = SubmitField("Подтвердить")
