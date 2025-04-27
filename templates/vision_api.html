@@ -1,8 +1,113 @@
 {% extends 'base.html' %}
-{% block title %}API{% endblock %}
+{% block title %}API Key{% endblock %}
 {% block content %}
-<div class="bg-light p-4 rounded shadow" style="margin-left: auto; margin-right: auto; max-width:600px; margin-top:25px;">
-    <h3>Your API KEY: {{ api_key }}</h3>
+<style>
+    .key-card {
+        animation: cardRise 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .key-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .api-key-box {
+        background: rgba(40, 167, 69, 0.1);
+        border: 2px dashed #28a745;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .api-key-box:hover {
+        transform: scale(1.02);
+        background: rgba(40, 167, 69, 0.15);
+    }
+
+    .copy-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .api-key-box:hover .copy-btn {
+        opacity: 1;
+    }
+
+    .copied-alert {
+        position: fixed;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .copied-active {
+        bottom: 20px;
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="key-card p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-lock fa-4x text-primary mb-4"></i>
+                    <h2 class="fw-bold mb-3">🔐 Ваш API Ключ</h2>
+                    <p class="text-muted">Используйте этот ключ для доступа к API</p>
+                </div>
+
+                <div class="api-key-box p-4 mb-4 position-relative">
+                    <code class="text-dark fs-5">{{ api_key }}</code>
+                    <button class="copy-btn btn btn-sm btn-success rounded-pill px-3 py-1">
+                        <i class="fas fa-copy me-2"></i>Копировать
+                    </button>
+                </div>
+
+                <div class="alert alert-warning border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-3 fs-5"></i>
+                        <div>
+                            <h5 class="mb-1">Важно!</h5>
+                            <p class="mb-0 small">
+                                Никому не передавайте этот ключ. В случае утери немедленно сгенерируйте новый.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<br>
+
+<div class="copied-alert alert alert-success border-0 shadow-lg">
+    <i class="fas fa-check-circle me-2"></i>Ключ скопирован в буфер обмена!
+</div>
+
+<script>
+    // Анимация копирования
+    document.querySelector('.copy-btn').addEventListener('click', function() {
+        const key = '{{ api_key }}';
+        navigator.clipboard.writeText(key);
+        
+        const alert = document.querySelector('.copied-alert');
+        alert.classList.add('copied-active');
+        setTimeout(() => alert.classList.remove('copied-active'), 2000);
+    });
+
+    // Плавное появление карточки
+    document.querySelector('.key-card').style.opacity = 0;
+    setTimeout(() => {
+        document.querySelector('.key-card').style.opacity = 1;
+    }, 50);
+</script>
 {% endblock %}
