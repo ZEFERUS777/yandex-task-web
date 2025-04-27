@@ -1,51 +1,156 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h4 class="mb-4">Добавить работу</h4>
+<style>
+    /* Анимации для формы */
+    @keyframes formAppear {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
     
-    <form method="post" class="bg-light p-4 rounded shadow">
-        {{ form.hidden_tag() }}
-        
-        <!-- Поле Job Title -->
-        <div class="mb-3">
-            {{ form.Job_Title.label }}
-            {{ form.Job_Title }}
-        </div>
+    .form-container {
+        animation: formAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .form-input {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        padding: 12px 15px;
+        border-radius: 8px;
+    }
+    
+    .form-input:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    }
+    
+    .input-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+    
+    .form-input:focus + .input-icon {
+        color: #0d6efd;
+    }
+    
+    .shake-error {
+        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    
+    @keyframes shake {
+        10%, 90% { transform: translateX(-2px); }
+        20%, 80% { transform: translateX(4px); }
+        30%, 50%, 70% { transform: translateX(-6px); }
+        40%, 60% { transform: translateX(6px); }
+    }
+</style>
 
-        <!-- Поле Team Leader -->
-        <div class="mb-3">
-            {{ form.Team_lead_id.label }}
-            {{ form.Team_lead_id }}
-        </div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="form-container">
+                <h2 class="mb-4 text-center fw-bold">🎨 Добавить новую работу</h2>
+                
+                <div class="form-card p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
 
-        <!-- Поле Work Size -->
-        <div class="mb-3">
-            {{ form.Work_Size.label }}
-            {{ form.Work_Size }}
-        </div>
+                        <!-- Job Title -->
+                        <div class="input-group">
+                            <i class="fas fa-heading input-icon"></i>
+                            {{ form.Job_Title(class="form-control form-input ps-4", placeholder="Введите название работы") }}
+                        </div>
 
-        <!-- Поле Collaborators -->
-        <div class="mb-3">
-            {{ form.Collaborators.label }}
-            {{ form.Collaborators }}
-        </div>
+                        <!-- Team Leader -->
+                        <div class="input-group">
+                            <i class="fas fa-user-shield input-icon"></i>
+                            {{ form.Team_lead_id(class="form-control form-input ps-4", placeholder="Выберите тимлида") }}
+                        </div>
 
-        <div class="mb-3 form-check">
-            {{ form.finish.label }}
-            {{ form.finish }}
-        </div>
+                        <!-- Work Size -->
+                        <div class="input-group">
+                            <i class="fas fa-ruler-combined input-icon"></i>
+                            {{ form.Work_Size(class="form-control form-input ps-4", placeholder="Укажите объем работы") }}
+                        </div>
 
-        <!-- Кнопка отправки -->
-        <div class="d-grid gap-2">
-            {{ form.sub }}
+                        <!-- Collaborators -->
+                        <div class="input-group">
+                            <i class="fas fa-users input-icon"></i>
+                            {{ form.Collaborators(class="form-control form-input ps-4", placeholder="Добавьте участников") }}
+                        </div>
+
+                        <!-- Finish Checkbox -->
+                        <div class="input-group form-check form-switch ms-2">
+                            {{ form.finish(class="form-check-input", style="width: 3em; margin-left: -0.5em;") }}
+                            {{ form.finish.label(class="form-check-label ms-3") }}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mt-4">
+                            {{ form.sub(class="btn btn-primary btn-lg py-3 fw-bold", style="transition: all 0.3s ease;") }}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Error Message -->
+                {% if error %}
+                <div class="alert alert-danger mt-4 shake-error" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Ошибка при сохранении в базу данных. Проверьте введенные данные.
+                </div>
+                {% endif %}
+            </div>
         </div>
-    </form>
-    <br><br>
-    {% if error %}
-    <div class="alert alert-danger" role="alert">
-        <p>Ошибка: при работе с базой данных</p>
     </div>
-    {% endif %}
 </div>
+
+<script>
+    // Добавляем интерактивности полям формы
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('focus', () => {
+            input.parentElement.style.transform = 'translateX(5px)';
+        });
+        
+        input.addEventListener('blur', () => {
+            input.parentElement.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Валидация формы
+    (function () {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                }
+            }, false)
+        })
+    })()
+</script>
 {% endblock %}
