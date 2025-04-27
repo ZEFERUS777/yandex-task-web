@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
@@ -7,15 +8,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Добавляем анимации для кнопок */
-        .btn-outline-primary, .btn-primary {
+        .btn-outline-primary,
+        .btn-primary {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             overflow: hidden;
         }
-        
+
         /* Эффект пульсации при клике */
         .btn-ripple-effect {
             position: absolute;
@@ -24,7 +26,7 @@
             transform: scale(0);
             animation: ripple 0.6s linear;
         }
-        
+
         @keyframes ripple {
             to {
                 transform: scale(2);
@@ -33,70 +35,157 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-            <div class="container">
-                <header
-                    class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-                    <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" class="logo" title="liridius">
-                    <span>Liridius Proj</span>
-                    <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-                        <li><a href="/" class="nav-link px-2 link-secondary">Главная</a></li>
-                        <li><a href="/jobs_vision" class="nav-link px-2">Работы</a></li>
-                        <li><a href="/addjob" class="nav-link px-2">Добавить работу</a></li>
-                        <li><a href="/create_api_key" class="nav-link px-2">Получить API ключ</a></li>
-                    </ul>
-
-                    <div class="col-md-3 text-end">
-                        <button type="button" class="btn btn-outline-primary me-2"><a href="/profile"
-                            class="nav-link px-2">Profile</a></button>
-                        <button type="button" class="btn btn-outline-primary me-2"><a href="/login"
-                                class="nav-link px-2">Login</a></button>
-                        <button type="button" class="btn btn-primary"><a href="/register"
-                                class="nav-link px-2">Sign-up</a></button>
-                    </div>
-                </header>
-                {% block content %}{% endblock %}
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" class="me-2" width="40">
+                <span class="fs-4">Liridius Proj</span>
             </div>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-                crossorigin="anonymous"></script>
-            <script>
-                // Анимация при наведении и клике
-                document.querySelectorAll('.btn').forEach(button => {
-                    // Эффект при наведении
-                    button.addEventListener('mouseover', () => {
-                        button.style.transform = 'translateY(-2px) scale(1.02)';
-                        button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                    });
-                    
-                    // Возврат в исходное состояние
-                    button.addEventListener('mouseout', () => {
-                        button.style.transform = 'translateY(0) scale(1)';
-                        button.style.boxShadow = 'none';
-                    });
-                    
-                    // Эффект при клике
-                    button.addEventListener('click', (e) => {
-                        // Создаем элемент для эффекта пульсации
-                        const ripple = document.createElement('div');
-                        ripple.className = 'btn-ripple-effect';
-                        
-                        // Позиционируем эффект
-                        const rect = button.getBoundingClientRect();
-                        const size = Math.max(rect.width, rect.height);
-                        ripple.style.width = ripple.style.height = `${size}px`;
-                        ripple.style.left = `${e.clientX - rect.left - size/2}px`;
-                        ripple.style.top = `${e.clientY - rect.top - size/2}px`;
-                        
-                        button.appendChild(ripple);
-                        
-                        // Удаляем элемент после анимации
-                        setTimeout(() => ripple.remove(), 600);
-                    });
-                });
-            </script>
+
+            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                <li><a href="/" class="nav-link px-2 link-secondary">Главная</a></li>
+                <li><a href="/jobs_vision" class="nav-link px-2">Работы</a></li>
+                <li><a href="/addjob" class="nav-link px-2">Добавить работу</a></li>
+                <li><a href="/create_api_key" class="nav-link px-2">API</a></li>
+            </ul>
+
+            <div class="col-md-3 text-end">
+                <!-- Исправленные кнопки с правильной семантикой -->
+                <a href="/profile" class="btn btn-outline-primary me-2">Профиль</a>
+                <a href="/login" class="btn btn-outline-primary me-2">Вход</a>
+                <a href="/register" class="btn btn-primary">Регистрация</a>
+            </div>
+        </header>
+
+        {% block content %}
+        <!-- Контент по умолчанию для главной страницы -->
+        <main>
+            <div class="px-4 py-5 my-5 text-center">
+                <h1 class="display-5 fw-bold">Платформа для творческих проектов</h1>
+                <div class="col-lg-6 mx-auto">
+                    <p class="lead mb-4">Делитесь своими работами, находите вдохновение и сотрудничайте с другими
+                        творческими профессионалами. Покажите миру свои лучшие проекты!</p>
+
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="/addjob" class="btn btn-primary btn-lg px-4 gap-3">Добавить работу</a>
+                        <a href="/jobs_vision" class="btn btn-outline-secondary btn-lg px-4">Смотреть работы</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+                <div class="col d-flex align-items-start">
+                    <div
+                        class="icon-square text-bg-light d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 feature-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2">Быстрая публикация</h3>
+                        <p>Простой и понятный интерфейс для мгновенной публикации ваших проектов.</p>
+                    </div>
+                </div>
+
+                <div class="col d-flex align-items-start">
+                    <div
+                        class="icon-square text-bg-light d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2">Защита авторства</h3>
+                        <p>Автоматическая фиксация времени публикации для защиты ваших авторских прав.</p>
+                    </div>
+                </div>
+
+                <div class="col d-flex align-items-start">
+                    <div
+                        class="icon-square text-bg-light d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2">Статистика просмотров</h3>
+                        <p>Отслеживайте интерес к вашим работам через детальную статистику просмотров.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        {% endblock %}
+
+        <!-- Добавлен футер -->
+        <footer class="border-top">
+            <div class="container py-5">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <h5>Разделы</h5>
+                        <ul class="nav flex-column">
+                            <li class="nav-item mb-2"><a href="/" class="nav-link p-0 text-muted">Главная</a></li>
+                            <li class="nav-item mb-2"><a href="/jobs_vision" class="nav-link p-0 text-muted">Работы</a>
+                            </li>
+                            <li class="nav-item mb-2"><a href="/addjob" class="nav-link p-0 text-muted">Добавить
+                                    работу</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-6 col-md-3 mb-3">
+                        <h5>Контакты</h5>
+                        <ul class="nav flex-column">
+                            <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted"><i
+                                        class="fab fa-telegram me-2"></i>Telegram</a></li>
+                            <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted"><i
+                                        class="fab fa-github me-2"></i>GitHub</a></li>
+                            <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted"><i
+                                        class="fas fa-envelope me-2"></i>Email</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between py-4 my-4 border-top">
+                    <p>&copy; 2024 Liridius Proj. Все права защищены.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        // Анимация при наведении и клике
+        document.querySelectorAll('.btn').forEach(button => {
+            // Эффект при наведении
+            button.addEventListener('mouseover', () => {
+                button.style.transform = 'translateY(-2px) scale(1.02)';
+                button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            });
+
+            // Возврат в исходное состояние
+            button.addEventListener('mouseout', () => {
+                button.style.transform = 'translateY(0) scale(1)';
+                button.style.boxShadow = 'none';
+            });
+
+            // Эффект при клике
+            button.addEventListener('click', (e) => {
+                // Создаем элемент для эффекта пульсации
+                const ripple = document.createElement('div');
+                ripple.className = 'btn-ripple-effect';
+
+                // Позиционируем эффект
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+                ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+
+                button.appendChild(ripple);
+
+                // Удаляем элемент после анимации
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
 </body>
+
 </html>
