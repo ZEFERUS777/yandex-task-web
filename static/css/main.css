@@ -1,13 +1,10 @@
 header {
     border-radius: 15px;
     padding: 15px;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .logo {
     width: 34px;
     height: 34px;
-    margin-top: -15px;
-    margin-right: 15px;
-    float: left
 }
