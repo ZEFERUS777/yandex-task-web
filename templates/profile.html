@@ -1,0 +1,9 @@
+{%  extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="container" id="profile">
+    <h2>Ваш профиль</h2>
+    <label class="form-label" for="user_name">Username: {{ user_name }}</label><br>
+    <label class="form-label" for="user_name">Your API KEY: {{ api_key }}</label>
+</div>
+{% endblock %}
