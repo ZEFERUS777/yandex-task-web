@@ -1,18 +1,177 @@
 {% extends 'base.html' %}
 {% block title %}Регистрация пользователя{% endblock %}
 {% block content %}
-<form method="POST" class="bg-light p-4 rounded shadow" style="margin-left: auto; margin-right: auto; max-width:500px; margin-top:25px;">
-    {{ form.email.label(class="form-label") }}
-    {{ form.email(class="form-control", placeholder="Enter your email:") }}
-    {{ form.password.label(class="form-label") }}
-    {{ form.password(class="form-control", placeholder="Enter your password:") }}
-    <br>
-    {{ form.submit(class="btn btn-primary") }}
-</form>
-<br>
-{% if error %}
-<div class="alert alert-danger" role="alert">
-    <p>{{ error }}</p>
+<style>
+    /* Анимации для формы */
+    @keyframes formSlide {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .auth-card {
+        animation: formSlide 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    }
+    
+    .input-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control {
+        padding-left: 45px;
+        height: 50px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        padding-left: 50px;
+    }
+    
+    .form-control:focus + .form-icon {
+        color: #0d6efd;
+        left: 20px;
+    }
+    
+    .auth-btn {
+        position: relative;
+        overflow: hidden;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+    
+    .ripple-effect {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+    }
+    
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .error-pulse {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="auth-card p-5">
+                <h2 class="text-center mb-4 fw-bold">🚀 Регистрация</h2>
+                <p class="text-center text-muted mb-4">Создайте новый аккаунт</p>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="input-group">
+                        <i class="fas fa-envelope form-icon"></i>
+                        {{ form.email(class="form-control form-control-lg", placeholder="Ваш Email") }}
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fas fa-lock form-icon"></i>
+                        {{ form.password(class="form-control form-control-lg", placeholder="Пароль") }}
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="auth-btn btn btn-primary btn-lg rounded-pill") }}
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        Уже есть аккаунт? <a href="/login" class="text-decoration-none">Войти</a>
+                    </small>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="error-pulse mt-4 alert alert-danger border-0 rounded-lg shadow">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3"></i>
+                    <div>
+                        <h5 class="mb-0">Ошибка регистрации</h5>
+                        <p class="mb-0 mt-1 small">{{ error }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
-{% endif %}
+
+<script>
+    // Анимация клика по кнопке
+    document.querySelector('.auth-btn').addEventListener('click', function(e) {
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple-effect';
+        
+        const rect = this.getBoundingClientRect();
+        ripple.style.width = ripple.style.height = `${rect.width}px`;
+        ripple.style.left = `${e.clientX - rect.left - rect.width/2}px`;
+        ripple.style.top = `${e.clientY - rect.top - rect.height/2}px`;
+        
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    });
+
+    // Валидация формы
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const inputs = document.querySelectorAll('.form-control');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if(!input.value.trim()) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+        
+        if(!isValid) {
+            e.preventDefault();
+            inputs.forEach(input => {
+                input.addEventListener('input', () => input.classList.remove('is-invalid'));
+            });
+        }
+    });
+</script>
 {% endblock %}
