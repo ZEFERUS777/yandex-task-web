@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, request
-from data.models import Jobs, db, Api_Keys
-
+from data.models import Jobs, db, Api_Keys, User
+from secrets import token_urlsafe
 
 jobs_bp = Blueprint('users', __name__,
                     url_prefix="/api/jobs")
-
+api_bp = Blueprint('api', __name__,
+                   url_prefix="/api/api_key")
 
 def check_api_key(api_key: str, email: str):
     rer = Api_Keys.query.filter_by(email_address=email).first()
@@ -38,7 +39,6 @@ def add_job():
     finish = bool(request.args.get("finish"))
     email = request.args.get("email")
     aper = Api_Keys().query.filter_by(email_address=email).first()
-    print(aper.check_password(api_l))
     if not aper.check_password(api_l):
         return jsonify({"error": "Invalid API key"}), 403
     if not all([job_title, team_lead_id, work_size, collaborators, finish]):
@@ -105,3 +105,28 @@ def update_job():
     except Exception as e:
         return jsonify({"error": "Error updating job"}), 500
     return jsonify({"message": "Job updated successfully"}), 200
+
+
+@api_bp.route("/reg_api", methods=["POST"])
+def reg_api():
+    print("TEST")
+    try:
+        print("TEST0")
+        email = request.args.get("email")
+        api = Api_Keys.query.filter_by(email_address=email).first()
+        user = User.query.filter_by(email=email).first()
+        if api:
+            return jsonify({"error": "User already exists"}), 401
+        if not user:
+            return jsonify({"error": "User does not exist"}), 400
+        api_l = Api_Keys(email_address=email)
+        password = token_urlsafe(16)
+        api_l.set_password(password)
+        db.session.add(api_l)
+        db.session.commit()
+        user.api_k = password
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"apikey": password}), 200
+    except Exception as e:
+        return jsonify({"error": "Error registering user"}), 500

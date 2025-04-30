@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, render_template, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from blueprint.rest_api import jobs_bp
+from blueprint.rest_api import jobs_bp, api_bp
 from data.models import User, Jobs, db, Api_Keys
 from secrets import token_urlsafe
 from data.wtf_forms import LoginForm, RegisterForm, JobForm, Reg_Api_key
@@ -15,6 +15,7 @@ log_m.init_app(app)
 log_m.login_view = "login"
 
 app.register_blueprint(jobs_bp)
+app.register_blueprint(api_bp)
 db.init_app(app)
 
 
