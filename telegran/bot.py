@@ -18,11 +18,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Константы для состояний ConversationHandler
-(API_KEY, EMAIL, JOB_TITLE, TEAM_LEAD_ID, 
+(API_KEY, EMAIL, JOB_TITLE, TEAM_LEAD_ID,
  WORK_SIZE, COLLABORATORS, FINISH, JOB_ID) = range(8)
-BASE_API_URL = "http://127.0.0.1:5000"  # ЗАМЕНИТЕ НА РЕАЛЬНЫЙ URL API
+BASE_API_URL = "http://127.0.0.1:5000"
 
 # ================== ОБРАБОТЧИКИ КОМАНД ==================
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "👋 Привет! Я бот для управления работами проекта Liridius.\n\n"
@@ -32,10 +33,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "/delete_job - Удалить работу\n"
         "/get_jobs - Список всех работ\n"
         "/get_job <id> - Информация о работе\n"
+        "/profile - Мой профиль\n"
         "/help - Помощь"
     )
 
+# ================== ЛИЧНЫЙ КАБИНЕТ ==================
+
+async def show_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_data = context.user_data
+    stats = {
+        'email': user_data.get('email', 'не указан'),
+        'api_key': user_data.get('api_key', 'не указан'),
+        'jobs_added': user_data.get('jobs_count', 0),
+        'jobs_deleted': user_data.get('deleted_count', 0)
+    }
+    
+    message = (
+        "👤 *Ваш профиль*\n"
+        f"📧 Email: `{stats['email']}`\n"
+        f"🔑 API-ключ: `{stats['api_key']}`\n"
+        f"✅ Добавлено работ: {stats['jobs_added']}\n"
+        f"❌ Удалено работ: {stats['jobs_deleted']}"
+    )
+    await update.message.reply_text(message, parse_mode="Markdown")
+
 # ================== СОЗДАНИЕ API КЛЮЧА ==================
+
 async def create_api_key(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("📧 Введите ваш email:")
     return EMAIL
@@ -47,20 +70,25 @@ async def process_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             f"{BASE_API_URL}/api/api_key/reg_api",
             params={"email": email}
         )
-        
+
         if response.status_code == 200:
             api_key = response.json().get("apikey")
+            context.user_data.update({
+                'email': email,
+                'api_key': api_key
+            })
             await update.message.reply_text(f"🔑 Ваш API ключ: {api_key}")
         else:
             error = response.json().get("error", "Неизвестная ошибка")
             await update.message.reply_text(f"❌ Ошибка: {error}")
-            
+
     except Exception as e:
         await update.message.reply_text(f"🚫 Ошибка соединения: {str(e)}")
-    
+
     return ConversationHandler.END
 
 # ================== ДОБАВЛЕНИЕ РАБОТЫ ==================
+
 async def add_job_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("🔑 Введите ваш API ключ:")
     return API_KEY
@@ -128,16 +156,18 @@ async def process_finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     try:
         response = requests.post(f"{BASE_API_URL}/api/jobs/add", params=params)
         if response.status_code == 200:
+            context.user_data['jobs_count'] = context.user_data.get('jobs_count', 0) + 1
             await update.message.reply_text("✅ Работа добавлена!")
         else:
             error = response.json().get("error", "Неизвестная ошибка")
             await update.message.reply_text(f"❌ Ошибка: {error}")
     except Exception as e:
         await update.message.reply_text(f"🚫 Ошибка соединения: {str(e)}")
-    
+
     return ConversationHandler.END
 
 # ================== УДАЛЕНИЕ РАБОТЫ ==================
+
 async def delete_job_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("🔑 Введите API ключ:")
     return API_KEY
@@ -160,23 +190,26 @@ async def process_job_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             "email": context.user_data["email"],
             "job_id": job_id
         }
-        response = requests.delete(f"{BASE_API_URL}/api/jobs/delete", params=params)
-        
+        response = requests.delete(
+            f"{BASE_API_URL}/api/jobs/delete", params=params)
+
         if response.status_code == 200:
+            context.user_data['deleted_count'] = context.user_data.get('deleted_count', 0) + 1
             await update.message.reply_text("✅ Работа удалена!")
         else:
             error = response.json().get("error", "Неизвестная ошибка")
             await update.message.reply_text(f"❌ Ошибка: {error}")
-            
+
     except ValueError:
         await update.message.reply_text("❌ Введите число!")
         return JOB_ID
     except Exception as e:
         await update.message.reply_text(f"🚫 Ошибка: {str(e)}")
-    
+
     return ConversationHandler.END
 
 # ================== ПОЛУЧЕНИЕ ДАННЫХ ==================
+
 async def get_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         response = requests.get(f"{BASE_API_URL}/api/jobs/")
@@ -184,7 +217,7 @@ async def get_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             jobs = response.json()
             if jobs:
                 message = "\n".join(
-                    [f"ID: {job['id']}, 🏷 {job['job_title']}" for job in jobs]
+                    [f"ID: {job['id']}, 🏷 {job['Job_Title']}" for job in jobs]
                 )
             else:
                 message = "📭 Список работ пуст"
@@ -198,47 +231,45 @@ async def get_job(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         job_id = int(context.args[0])
         response = requests.get(f"{BASE_API_URL}/api/jobs/{job_id}")
-        
+
         if response.status_code == 200:
             job = response.json()
             message = (
                 f"🆔 ID: {job['id']}\n"
-                f"🏷 Название: {job['job_title']}\n"
-                f"👤 Руководитель: {job['team_lead_id']}\n"
-                f"⏳ Объем: {job['work_size']} часов\n"
-                f"👥 Участники: {job['collaborators']}\n"
+                f"🏷 Название: {job['Job_Title']}\n"
+                f"👤 Руководитель: {job['Team_lead_id']}\n"
+                f"⏳ Объем: {job['Work_Size']} часов\n"
+                f"👥 Участники: {job['Collaborators']}\n"
                 f"✅ Статус: {'Завершена' if job['finish'] else 'В процессе'}"
             )
             await update.message.reply_text(message)
         else:
             await update.message.reply_text("❌ Работа не найдена")
-            
+
     except (IndexError, ValueError):
         await update.message.reply_text("ℹ️ Использование: /get_job <ID>")
     except Exception as e:
         await update.message.reply_text(f"🚫 Ошибка: {str(e)}")
 
 # ================== ЗАПУСК ПРИЛОЖЕНИЯ ==================
+
 def main() -> None:
-    # Инициализация приложения
-    application = ApplicationBuilder().token("ВАШ ТОКЕН").build()  # ЗАМЕНИТЕ НА ВАШ ТОКЕН
+    application = ApplicationBuilder().token("7956890852:AAE6RzlXvyvr4RGB0IVUL2kZzSO9gavalo4").build()
 
     # Регистрация обработчиков команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("get_jobs", get_jobs))
     application.add_handler(CommandHandler("get_job", get_job))
+    application.add_handler(CommandHandler("profile", show_profile))
     application.add_handler(CommandHandler("help", start))
 
     # Регистрация ConversationHandler
-    application.add_handler(
+    conv_handlers = [
         ConversationHandler(
             entry_points=[CommandHandler("create_api_key", create_api_key)],
             states={EMAIL: [MessageHandler(filters.TEXT, process_email)]},
             fallbacks=[]
-        )
-    )
-
-    application.add_handler(
+        ),
         ConversationHandler(
             entry_points=[CommandHandler("add_job", add_job_start)],
             states={
@@ -251,10 +282,7 @@ def main() -> None:
                 FINISH: [MessageHandler(filters.TEXT, process_finish)]
             },
             fallbacks=[]
-        )
-    )
-
-    application.add_handler(
+        ),
         ConversationHandler(
             entry_points=[CommandHandler("delete_job", delete_job_start)],
             states={
@@ -264,9 +292,11 @@ def main() -> None:
             },
             fallbacks=[]
         )
-    )
+    ]
 
-    # Запуск бота
+    for handler in conv_handlers:
+        application.add_handler(handler)
+
     application.run_polling()
 
 if __name__ == "__main__":
