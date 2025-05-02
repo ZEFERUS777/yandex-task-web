@@ -118,7 +118,7 @@ def create_api_key():
 @login_required
 def jobs_vision():
     jobs = Jobs.query.all()
-    return render_template("jobs_list.html", jobs=jobs)
+    return render_template("jobs_list.html", jobs=jobs, title="Список работ")
 
 
 @app.route("/profile")

@@ -80,7 +80,12 @@ async def process_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             await update.message.reply_text(f"🔑 Ваш API ключ: {api_key}")
         else:
             error = response.json().get("error", "Неизвестная ошибка")
-            await update.message.reply_text(f"❌ Ошибка: {error}")
+            if error == "User does not exist":
+                await update.message.reply_text("❌ Пользователь не зарегистрирован на сайте Liridius Proj. Зарегистрируйтесь сначала на сайте.")
+            elif error == "User already exists":
+                await update.message.reply_text("❌У пользователя уже зарегистрирован API ключ на сайте Liridius Proj. Проверьте вашу почту и подтвердите регистрацию.")
+            else:
+                await update.message.reply_text(f"❌ Ошибка: {error}")
 
     except Exception as e:
         await update.message.reply_text(f"🚫 Ошибка соединения: {str(e)}")
