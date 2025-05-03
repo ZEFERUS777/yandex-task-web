@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление начальника{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container animate__animated animate__fadeInUp">
+        <h2 class="form-title">Добавление нового начальника</h2>
+        
+        {% if error %}
+            <div class="alert alert-danger error-alert animate__animated animate__shakeX" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.lead_name.label(class="form-label") }}
+                {{ form.lead_name(class="form-control input-animation") }}
+                {% if form.lead_name.errors %}
+                    <div class="invalid-feedback" style="display: block;">
+                        {{ form.lead_name.errors[0] }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.lead_id.label(class="form-label") }}
+                {{ form.lead_id(class="form-control input-animation") }}
+                {% if form.lead_id.errors %}
+                    <div class="invalid-feedback" style="display: block;">
+                        {{ form.lead_id.errors[0] }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.email_lead.label(class="form-label") }}
+                {{ form.email_lead(class="form-control input-animation") }}
+                {% if form.email_lead.errors %}
+                    <div class="invalid-feedback" style="display: block;">
+                        {{ form.email_lead.errors[0] }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {{ form.sub_btn(class="btn btn-primary submit-btn hover-scale") }}
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .submit-btn {
+        width: 100%;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .error-alert {
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .input-animation {
+        transition: all 0.3s ease;
+    }
+
+    .input-animation:focus {
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.25);
+    }
+
+    .hover-scale {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.02);
+    }
+
+    .animate__animated {
+        animation-duration: 0.8s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shakeX {
+        from, to { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+        20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+
+    .animate__fadeInUp { animation-name: fadeIn; }
+    .animate__shakeX { animation-name: shakeX; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('#lead_name').focus();
+        
+        const fields = [
+            {id: '#lead_name', type: 'text'},
+            {id: '#lead_id', type: 'number'},
+            {id: '#email_lead', type: 'email'}
+        ];
+
+        fields.forEach(field => {
+            const input = document.querySelector(field.id);
+            input.addEventListener('input', function() {
+                this.classList.toggle('is-valid', this.checkValidity());
+                this.classList.toggle('is-invalid', !this.checkValidity());
+                if(this.value) {
+                    this.style.transform = 'scale(1.02)';
+                } else {
+                    this.style.transform = 'scale(1)';
+                }
+            });
+        });
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    this.classList.remove('animate__animated', 'animate__shakeX');
+                }, 800);
+            }
+            this.classList.add('was-validated');
+        });
+
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', () => {
+                const errorAlert = document.querySelector('.error-alert');
+                if (errorAlert) {
+                    errorAlert.classList.add('animate__animated', 'animate__fadeOut');
+                    setTimeout(() => errorAlert.remove(), 500);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

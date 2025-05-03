@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Начальники{% endblock %}
+{% block content %}
+<style>
+    /* Анимации для карточек */
+    @keyframes cardEntrance {
+        from { opacity: 0; transform: translateY(50px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .lead-card {
+        animation: cardEntrance 0.6s ease forwards;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .lead-card:hover {
+        transform: translateY(-5px) rotateZ(1deg);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+    }
+    
+    .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #e74c3c;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .lead-card:hover .card-header::after {
+        transform: scaleX(1);
+    }
+    
+    .info-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .floating-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+</style>
+
+<div class="container py-5">
+    <h1 class="text-center mb-5 display-4 fw-bold">👔 Руководящий состав</h1>
+    
+    {% if not leads %}
+    <div class="alert alert-info text-center animate__animated animate__fadeIn">
+        <i class="fas fa-user-slash me-2"></i>Нет зарегистрированных руководителей
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for lead in leads %}
+        <div class="col-lg-4 col-md-6" style="animation-delay: {{ loop.index * 0.1 }}s;">
+            <div class="lead-card card h-100 border-0 shadow-lg">
+                <div class="card-header text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-tie floating-icon me-3"></i>
+                        <h4 class="mb-0">{{ lead.name }}</h4>
+                    </div>
+                </div>
+                
+                <div class="card-body position-relative">
+                    <div class="info-badge p-3 mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-id-card text-primary me-2"></i>
+                            <span class="small">Идентификатор:</span>
+                        </div>
+                        <span class="badge bg-primary">TL-{{ lead.team_lead_id }}</span>
+                    </div>
+
+                    <div class="info-badge p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-envelope text-success me-2"></i>
+                            <span class="small">Контактный email:</span>
+                        </div>
+                        <a href="mailto:{{ lead.email }}" class="text-decoration-none">
+                            <span class="badge bg-success">{{ lead.email }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Инициализация анимаций карточек
+    document.querySelectorAll('.lead-card').forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+
+    // Параллакс эффект для карточек
+    document.querySelectorAll('.lead-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            card.style.transform = `
+                rotateX(${(y - rect.height/2) / 15}deg) 
+                rotateY(${(x - rect.width/2) / -15}deg) 
+                translateZ(10px)
+            `;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'none';
+        });
+    });
+</script>
+{% endblock %}

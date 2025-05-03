@@ -1,9 +1,9 @@
 from flask import Flask, request, redirect, render_template, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from blueprint.rest_api import jobs_bp, api_bp
-from data.models import User, Jobs, db, Api_Keys
+from data.models import User, Jobs, db, Api_Keys, TeamLead
 from secrets import token_urlsafe
-from data.wtf_forms import LoginForm, RegisterForm, JobForm, Reg_Api_key
+from data.wtf_forms import LoginForm, RegisterForm, JobForm, Reg_Api_key, Add_Team_Lead
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flask.sqlite3"
@@ -54,9 +54,11 @@ def addjob():
     forma = JobForm()
     if forma.validate_on_submit():
         try:
+            tm_id = forma.Team_lead_id.data
+            tm_email = TeamLead.query.filter_by(team_lead_id=tm_id).first()
             job = Jobs(
                 job_title=forma.Job_Title.data,
-                team_lead_id=forma.Team_lead_id.data,
+                team_lead_id=tm_id,
                 work_size=forma.Work_Size.data,
                 collaborators=forma.Collaborators.data,
                 finish=forma.finish.data
@@ -108,7 +110,8 @@ def create_api_key():
             db.session.add(user)
             db.session.commit()
             return render_template("vision_api.html", api_key=key)
-        except Exception:
+        except Exception as e:
+            print(e)
             return render_template("reg_api.html", form=form,
                                    error="Ошибка при работе с базой данных")
     return render_template("reg_api.html", form=form)
@@ -129,12 +132,28 @@ def profile():
     return render_template("profile.html", user_name=current_user.email, api_key=current_user.api_k)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route("/add_lead", methods=["GET", "POST"])
+@login_required
+def add_lead():
+    form = Add_Team_Lead()
+    if request.method == "POST":
+        name = form.lead_name.data
+        lead_id = form.lead_id.data
+        email = form.email_lead.data
+        if TeamLead.query.filter_by(email=email).first() is not None or TeamLead.query.filter_by(team_lead_id=lead_id).first() is not None:
+            return render_template("team_leads_add.html", form=form, error="Лидер уже существует")
+        lead = TeamLead(name=name, team_lead_id=lead_id, email=email)
+        db.session.add(lead)
+        db.session.commit()
+        return redirect(url_for("index"))
+    return render_template("team_leads_add.html", form=form)
 
 
-with app.app_context():
-    db.create_all()
+@app.route("/team_leads")
+@login_required
+def team_leads():
+    leads = TeamLead.query.all()
+    return render_template("leads.html", leads=leads)
 
 
 if __name__ == '__main__':

@@ -2,8 +2,20 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-
 db = SQLAlchemy()
+
+
+class TeamLead(db.Model, SerializerMixin):
+    __tablename__ = 'team_leads'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    team_lead_id = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(80), nullable=False)
+    
+    def __init__(self, name: str, team_lead_id: int, email: str):
+        self.name = name
+        self.team_lead_id = team_lead_id
+        self.email = email
 
 
 class User(UserMixin, db.Model, SerializerMixin):

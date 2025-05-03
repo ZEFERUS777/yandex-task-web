@@ -56,3 +56,10 @@ class RegisterForm(FlaskForm):
 
 class Reg_Api_key(FlaskForm):
     sub_btn = SubmitField("Подтвердить")
+
+
+class Add_Team_Lead(FlaskForm):
+    lead_name = StringField("Имя начальника:", validators=[validators.DataRequired()])
+    lead_id = IntegerField("ID начальника:", validators=[validators.DataRequired()])
+    email_lead = EmailField("Почта начальника:", validators=[validators.DataRequired()])
+    sub_btn = SubmitField("Подтвердить")
